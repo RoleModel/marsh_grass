@@ -66,4 +66,24 @@ RSpec.describe MarshGrass do
       expect { sleep 1 }.to change { Time.now.to_i }.by(1)
     end
   end
+
+  context 'running tests for variations in timezone' do
+    it 'allows testing for all timezone variations', :timezones do
+      expect(Time.now.hour).not_to eq(1)
+    end
+  end
+
+  context 'combining test scenarios' do
+    # Should run (20 * 24)x and fail 66%
+    it 'runs repetitions of iterations on hours', repetitions: 20, time_of_day: :hours do
+      expect(rand(1..3)).to eq 1
+    end
+
+    # Should run (2 * 1000)x before passed time and fail last ~ (3 * 50)x
+    # Should run (2 * 1000)x after passed time and never fail
+    it 'runs at slowly and approaching midnight', elapsed_time: (1..2), surrounding_time: { hour: 0, minute: 0, second: 0 } do
+      now = Time.now
+      expect { sleep 0.05 }.not_to change { Time.now.day }.from(now.day)
+    end
+  end
 end

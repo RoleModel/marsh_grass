@@ -102,4 +102,27 @@ RSpec.configure do |config|
     # running it a number of times.
     example.example_group.remove_example(example)
   end
+
+  config.around(timezones: true) do |example|
+    utc = Time.now.utc
+    %w[-12 -11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 +00 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 +11 +12 +13 +14].each do |timezone_hour|
+      %w[00 30].each do |timezone_minute|
+        # Duplicate the current example, ensuring this tag doesn't trigger...
+        repetition = example.duplicate_with(timezones: false)
+        # Append the time of day to our test description, so we can see it.
+        repetition.metadata[:description] += " (Timezone Offset #{timezone_hour}:#{timezone_minute})"
+        adjusted_time = Time.new(utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec, "#{timezone_hour}:#{timezone_minute}")
+        Timecop.travel(adjusted_time) do
+          # We need to run the test within the Timecop.freeze block,
+          # in order to actually be affected by Timecop. If we didn't need to
+          # be inside this block, we could add the example to a context (as we
+          # do for repetitions) and let RSpec run it.
+          repetition.run(example.example_group_instance, example.reporter)
+        end
+      end
+    end
+    # Remove the original example; it wouldn't hurt to leave, but we're already
+    # running it a number of times.
+    example.example_group.remove_example(example)
+  end
 end
