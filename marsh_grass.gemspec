@@ -37,4 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'pry-doc'
   spec.add_dependency 'rspec', '~> 3.6'
+  spec.add_dependency 'timecop'
 end
