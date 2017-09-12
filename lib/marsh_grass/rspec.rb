@@ -51,6 +51,36 @@ RSpec.configure do |config|
     example.example_group.remove_example(example)
   end
 
+  config.around(surrounding_time: true) do |example|
+    now = Time.now
+    test_surrounding_time = example.metadata[:surrounding_time]
+    hour = test_surrounding_time.fetch(:hour, now.hour)
+    minute = test_surrounding_time.fetch(:minute, now.min)
+    second = test_surrounding_time.fetch(:second, now.sec)
+    # 1000 milliseconds before & after the given time
+    test_time_float = Time.local(now.year, now.month, now.day, hour, minute, second).to_f
+    (-1000..1000).each do |millisecond|
+      # Duplicate the current example, ensuring this tag doesn't trigger...
+      repetition = example.duplicate_with(surrounding_time: false)
+      test_time = Time.at(test_time_float + millisecond.to_f / 1000)
+      # Travel to the specified hour, minute, second, and millisecond, allowing
+      # for time to elapse.
+
+      Timecop.travel(test_time) do
+        # Append the time of day to our test description, so we can see it.
+        repetition.metadata[:description] += " (Run Time #{test_time.strftime('%H:%M:%S:%L')})"
+        # We need to run the test within the Timecop.freeze block,
+        # in order to actually be affected by Timecop. If we didn't need to
+        # be inside this block, we could add the example to a context (as we
+        # do for repetitions) and let RSpec run it.
+        repetition.run(example.example_group_instance, example.reporter)
+      end
+    end
+    # Remove the original example; it wouldn't hurt to leave, but we're already
+    # running it a number of times.
+    example.example_group.remove_example(example)
+  end
+
   config.around(elapsed_time: true) do |example|
     # Duplicate the current example, ensuring this tag doesn't trigger...
     # Freeze time at the specified hour, minute, and/or second.
