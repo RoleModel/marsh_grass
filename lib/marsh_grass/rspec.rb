@@ -11,7 +11,7 @@ RSpec.configure do |config|
       # Duplicate the current example, ensuring this tag doesn't trigger...
       repetition = example.duplicate_with(repetitions: false)
       # Add some additional context...
-      description = "(Repetition ##{repetition_num} of #{total})"
+      description = "(Repetition ##{repetition_num + 1} of #{total})"
       context = example.example_group.context(description)
       # Insert the copy into our new context...
       context.add_example(repetition)
@@ -44,6 +44,28 @@ RSpec.configure do |config|
             repetition.run(example.example_group_instance, example.reporter)
           end
         end
+      end
+    end
+    # Remove the original example; it wouldn't hurt to leave, but we're already
+    # running it a number of times.
+    example.example_group.remove_example(example)
+  end
+
+  config.around(elapsed_time: true) do |example|
+    # Duplicate the current example, ensuring this tag doesn't trigger...
+    # Freeze time at the specified hour, minute, and/or second.
+    time_multipliers = example.metadata[:elapsed_time]
+    time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
+    time_multipliers.each do |seconds_multiplier|
+      repetition = example.duplicate_with(elapsed_time: false)
+      Timecop.scale(seconds_multiplier) do
+        # Append the time of day to our test description, so we can see it.
+        repetition.metadata[:description] += " (Run Speed #{seconds_multiplier}x Slower)"
+        # We need to run the test within the Timecop.freeze block,
+        # in order to actually be affected by Timecop. If we didn't need to
+        # be inside this block, we could add the example to a context (as we
+        # do for repetitions) and let RSpec run it.
+        repetition.run(example.example_group_instance, example.reporter)
       end
     end
     # Remove the original example; it wouldn't hurt to leave, but we're already
