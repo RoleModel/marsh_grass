@@ -81,7 +81,7 @@ RSpec.describe MarshGrass do
 
     # Should run (2 * 1000)x before passed time and fail last ~ (3 * 50)x
     # Should run (2 * 1000)x after passed time and never fail
-    it 'runs at slowly and approaching midnight', elapsed_time: (1..2), surrounding_time: { hour: 0, minute: 0, second: 0 } do
+    it 'runs slowly and time approaches midnight', elapsed_time: (1..2), surrounding_time: { hour: 0, minute: 0, second: 0 } do
       now = Time.now
       expect { sleep 0.05 }.not_to change { Time.now.day }.from(now.day)
     end

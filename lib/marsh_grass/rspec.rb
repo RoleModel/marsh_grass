@@ -6,7 +6,8 @@ require 'timecop'
 RSpec.configure do |config|
   config.around(repetitions: true) do |example|
     # Fetch the number of repetitions to try...
-    total = example.metadata[:repetitions]
+    repetitions = example.metadata[:repetitions]
+    total = repetitions.is_a?(Integer) ? repetitions : 20
     total.times do |repetition_num|
       # Duplicate the current example, ensuring this tag doesn't trigger...
       repetition = example.duplicate_with(repetitions: false)
@@ -25,6 +26,7 @@ RSpec.configure do |config|
     now = Time.now
     time_of_day = example.metadata[:time_of_day]
     test_segments = time_of_day.is_a?(Array) ? time_of_day : [time_of_day]
+    test_segments = [:hours] if test_segments == [true]
     hours_to_run = test_segments.include?(:hours) ? (0..23) : [now.hour]
     minutes_to_run = test_segments.include?(:minutes) ? (0..59) : [now.min]
     seconds_to_run = test_segments.include?(:seconds) ? (0..59) : [now.sec]
