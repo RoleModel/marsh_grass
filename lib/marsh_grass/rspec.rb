@@ -7,7 +7,7 @@ RSpec.configure do |config|
   config.around(repetitions: true) do |example|
     # Fetch the number of repetitions to try...
     repetitions = example.metadata[:repetitions]
-    total = repetitions.is_a?(Integer) ? repetitions : 20
+    total = repetitions.is_a?(Integer) ? repetitions : ENV.fetch('REPETITIONS', 21).to_i
     total.times do |repetition_num|
       # Duplicate the current example, ensuring this tag doesn't trigger...
       repetition = example.duplicate_with(repetitions: false)

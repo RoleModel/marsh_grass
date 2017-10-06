@@ -8,8 +8,20 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests a certain number of times' do
+    # should run 20x and fail ~14x
     it 'allows specifying a number of repetitions', repetitions: 20 do
       expect(rand(1..3)).to eq 1
+    end
+
+    context 'with ENV variable' do
+      before(:all) do
+        ENV['REPETITIONS'] = '30'
+      end
+
+      # should run 30x and fail 20x
+      it 'allows specifying a number of repetitions', repetitions: true do
+        expect(rand(1..3)).to eq 1
+      end
     end
   end
 
