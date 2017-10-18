@@ -30,17 +30,17 @@ RSpec.describe MarshGrass do
       expect(Time.now.sec).not_to eq(44)
     end
 
-    # Should run (24 * 60)x and fail 1x
+    # Should run (24 * 60) = 1440x and fail 1x
     it 'allows testing against an iteration of hours and minutes', time_of_day: [:hours, :minutes] do
       expect(Time.now.strftime('%H:%M')).not_to eq('10:25')
     end
 
-    # Should run (60 * 60)x and fail 1x
+    # Should run (60 * 60) = 3600x and fail 1x
     it 'allows testing against an iteration of minutes and seconds', time_of_day: [:minutes, :seconds] do
       expect(Time.now.strftime('%M:%S')).not_to eq('25:44')
     end
 
-    # Should run (24 * 60 * 60)x and fail 1x
+    # Should run (24 * 60 * 60) = 86400x and fail 1x
     it 'allows testing against an iteration of hours, minutes, and seconds', time_of_day: [:hours, :minutes, :seconds] do
       expect(Time.now.strftime('%H:%M:%S')).not_to eq('10:25:44')
     end
