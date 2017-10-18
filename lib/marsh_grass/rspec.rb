@@ -7,7 +7,7 @@ require 'pry'
 RSpec.configure do |config|
   config.around(time_of_day: true) do |original_example|
     now = Time.now
-    time_of_day = original_example.metadata[:time_of_day]
+    time_of_day = original_example.metadata.delete(:time_of_day)
     test_segments = time_of_day.is_a?(Array) ? time_of_day : [time_of_day]
     test_segments = [:hours] if test_segments == [true]
     hours_to_run = test_segments.include?(:hours) ? (0..23) : [now.hour]
@@ -31,9 +31,8 @@ RSpec.configure do |config|
           Timecop.freeze(now.year, now.month, now.day, hour, minute, second) do
             # Let the original example be the final repetition
             example = if run_count < total
-              original_example.duplicate_with(time_of_day: false) # ensure tag does not trigger
+              original_example.duplicate_with
             else
-              original_example.metadata[:time_of_day] = false
               original_example
             end
             describe_time_of_day(example, hour, minute, second)
@@ -46,7 +45,7 @@ RSpec.configure do |config|
 
   config.around(surrounding_time: true) do |original_example|
     now = Time.now
-    surrounding_time = original_example.metadata[:surrounding_time]
+    surrounding_time = original_example.metadata.delete(:surrounding_time)
     hour = surrounding_time.fetch(:hour, now.hour)
     minute = surrounding_time.fetch(:minute, now.min)
     second = surrounding_time.fetch(:second, now.sec)
@@ -66,9 +65,8 @@ RSpec.configure do |config|
       Timecop.travel(test_time) do
         # Let the original example be the final repetition
         example = if millisecond < 1000
-          original_example.duplicate_with(surrounding_time: false) # ensure tag doesn't trigger
+          original_example.duplicate_with
         else
-          original_example.metadata[:surrounding_time] = false
           original_example
         end
         describe_exact_time(example, test_time)
@@ -85,14 +83,13 @@ RSpec.configure do |config|
     # Freeze time at the specified hour, minute, and/or second.
     # We need to run the test within the Timecop.freeze block,
     # in order to actually be affected by Timecop.
-    time_multipliers = original_example.metadata[:elapsed_time]
+    time_multipliers = original_example.metadata.delete(:elapsed_time)
     time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
     time_multipliers.each do |seconds_multiplier|
       Timecop.scale(seconds_multiplier) do
         example = if (seconds_multiplier != time_multipliers.last)
-          original_example.duplicate_with(elapsed_time: false) # ensure tag doesn't trigger
+          original_example.duplicate_with
         else
-          original_example.metadata[:elapsed_time] = false
           original_example
         end
         describe_time_elapsed(example, seconds_multiplier)
@@ -102,6 +99,8 @@ RSpec.configure do |config|
   end
 
   config.around(time_zones: true) do |original_example|
+    original_example.metadata.delete(:time_zones)
+
     utc = Time.now.utc
     time_zone_hours = %w[-12 -11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 +00 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 +11 +12 +13 +14]
     time_zone_minutes = %w[00 30]
@@ -121,9 +120,8 @@ RSpec.configure do |config|
         Timecop.travel(adjusted_time) do
           run_count = (hour_index * 2) + minute_index
           example = if run_count < total
-            original_example.duplicate_with(time_zones: false)
+            original_example.duplicate_with
           else
-            original_example.metadata[:time_zones] = false
             original_example
           end
           describe_time_zone(example, time_zone_hour, time_zone_minute)
@@ -135,7 +133,7 @@ RSpec.configure do |config|
 
   config.around(repetitions: true) do |original_example|
     # Fetch the number of repetitions to try...
-    repetitions = original_example.metadata[:repetitions]
+    repetitions = original_example.metadata.delete(:repetitions)
     total = repetitions.is_a?(Integer) ? repetitions : 1000
 
     def describe_repetition_count(test, count, total)
@@ -145,9 +143,8 @@ RSpec.configure do |config|
     (1..total).each do |count|
       # Let the original example be the final repetition
       example = if count < total
-        original_example.duplicate_with(repetitions: false) # ensure tag does not trigger
+        original_example.duplicate_with
       else
-        original_example.metadata[:repetitions] = false
         original_example
       end
       describe_repetition_count(example, count, total)
