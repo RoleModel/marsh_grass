@@ -36,7 +36,7 @@ RSpec.configure do |config|
     minutes_to_run = test_segments.include?(:minutes) ? (0..59) : [now.min]
     seconds_to_run = test_segments.include?(:seconds) ? (0..59) : [now.sec]
 
-    total = hours_to_run.size + (minutes_to_run.size - 1) + (seconds_to_run.size - 1)
+    total = hours_to_run.size * minutes_to_run.size * seconds_to_run.size
     run_count = 0
 
     # Add time of day to our test description
@@ -49,13 +49,9 @@ RSpec.configure do |config|
         seconds_to_run.each do |second|
           run_count += 1
           # Freeze time at the specified hour, minute, and/or second.
+          # We need to run the test within the Timecop.freeze block,
+          # in order to actually be affected by Timecop.
           Timecop.freeze(now.year, now.month, now.day, hour, minute, second) do
-
-            # We need to run the test within the Timecop.freeze block,
-            # in order to actually be affected by Timecop. If we didn't need to
-            # be inside this block, we could add the example to a context (as we
-            # do for repetitions) and let RSpec run it.
-
             # Let the original example be the final repetition
             example = if run_count < total
               original_example.duplicate_with(time_of_day: false) # ensure tag does not trigger
@@ -88,9 +84,7 @@ RSpec.configure do |config|
       # Travel to the specified hour, minute, second, and millisecond, allowing
       # for time to elapse.
       # We need to run the test within the Timecop.freeze block,
-      # in order to actually be affected by Timecop. If we didn't need to
-      # be inside this block, we could add the original_example to a context (as we
-      # do for repetitions) and let RSpec run it.
+      # in order to actually be affected by Timecop.
       test_time = Time.at(test_time_float + millisecond.to_f / 1000)
       Timecop.travel(test_time) do
         # Let the original example be the final repetition
