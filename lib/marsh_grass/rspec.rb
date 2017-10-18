@@ -100,25 +100,27 @@ RSpec.configure do |config|
   end
 
   config.around(elapsed_time: true) do |original_example|
-    # Duplicate the current original_example, ensuring this tag doesn't trigger...
+    # Add to test description the time elapsed while the test ran
+    def modify_description(test, scale)
+      test.metadata[:description] = "Run Speed #{scale}x Slower: #{test.metadata[:description]}"
+    end
+
     # Freeze time at the specified hour, minute, and/or second.
+    # We need to run the test within the Timecop.freeze block,
+    # in order to actually be affected by Timecop.
     time_multipliers = original_example.metadata[:elapsed_time]
     time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
     time_multipliers.each do |seconds_multiplier|
-      repetition = original_example.duplicate_with(elapsed_time: false)
       Timecop.scale(seconds_multiplier) do
-        # Append the time of day to our test description, so we can see it.
-        repetition.metadata[:description] += " (Run Speed #{seconds_multiplier}x Slower)"
-        # We need to run the test within the Timecop.freeze block,
-        # in order to actually be affected by Timecop. If we didn't need to
-        # be inside this block, we could add the original_example to a context (as we
-        # do for repetitions) and let RSpec run it.
-        repetition.run(original_example.example_group_instance, original_example.reporter)
+        example = if (seconds_multiplier != time_multipliers.last)
+          original_example.duplicate_with(elapsed_time: false) # ensure tag doesn't trigger
+        else
+          original_example
+        end
+        modify_description(example, seconds_multiplier)
+        example.run(original_example.example_group_instance, original_example.reporter)
       end
     end
-    # Remove the original original_example; it wouldn't hurt to leave, but we're already
-    # running it a number of times.
-    original_example.example_group.remove_example(original_example)
   end
 
   config.around(timezones: true) do |original_example|
