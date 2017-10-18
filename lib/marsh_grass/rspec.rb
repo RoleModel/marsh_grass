@@ -123,26 +123,35 @@ RSpec.configure do |config|
     end
   end
 
-  config.around(timezones: true) do |original_example|
+  config.around(time_zones: true) do |original_example|
     utc = Time.now.utc
-    %w[-12 -11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 +00 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 +11 +12 +13 +14].each do |timezone_hour|
-      %w[00 30].each do |timezone_minute|
-        # Duplicate the current original_example, ensuring this tag doesn't trigger...
-        repetition = original_example.duplicate_with(timezones: false)
-        # Append the time of day to our test description, so we can see it.
-        repetition.metadata[:description] += " (Timezone Offset #{timezone_hour}:#{timezone_minute})"
-        adjusted_time = Time.new(utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec, "#{timezone_hour}:#{timezone_minute}")
+    time_zone_hours = %w[-12 -11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 +00 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 +11 +12 +13 +14]
+    time_zone_minutes = %w[00 30]
+
+    # Add time zone to test description
+    def modify_description(test, time_zone_hour, time_zone_minute)
+      test.metadata[:description] = "Time Zone Offset #{time_zone_hour}:#{time_zone_minute}: #{test.metadata[:description]}"
+    end
+
+    total = time_zone_hours.size * time_zone_minutes.size
+
+    time_zone_hours.each.with_index do |time_zone_hour, hour_index|
+      time_zone_minutes.each.with_index(1) do |time_zone_minute, minute_index|
+        adjustment = "#{time_zone_hour}:#{time_zone_minute}"
+        adjusted_time = Time.new(utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec, adjustment)
+        # We need to run the test within the Timecop.freeze block,
+        # in order to actually be affected by Timecop.
         Timecop.travel(adjusted_time) do
-          # We need to run the test within the Timecop.freeze block,
-          # in order to actually be affected by Timecop. If we didn't need to
-          # be inside this block, we could add the original_example to a context (as we
-          # do for repetitions) and let RSpec run it.
-          repetition.run(original_example.example_group_instance, original_example.reporter)
+          run_count = (hour_index * 2) + minute_index
+          example = if run_count < total
+            original_example.duplicate_with(time_zones: false)
+          else
+            original_example
+          end
+          modify_description(example, time_zone_hour, time_zone_minute)
+          example.run(original_example.example_group_instance, original_example.reporter)
         end
       end
     end
-    # Remove the original original_example; it wouldn't hurt to leave, but we're already
-    # running it a number of times.
-    original_example.example_group.remove_example(example)
   end
 end
