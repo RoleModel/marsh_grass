@@ -37,13 +37,13 @@ RSpec.configure do |config|
     seconds_to_run = test_segments.include?(:seconds) ? (0..59) : [now.sec]
 
     total = hours_to_run.size * minutes_to_run.size * seconds_to_run.size
-    run_count = 0
 
     # Add time of day to our test description
     def modify_description(test, hour, minute, second)
       test.metadata[:description] = "Run Time #{hour}:#{minute}:#{second}: #{test.metadata[:description]}"
     end
 
+    run_count = 0
     hours_to_run.each do |hour|
       minutes_to_run.each do |minute|
         seconds_to_run.each do |second|
