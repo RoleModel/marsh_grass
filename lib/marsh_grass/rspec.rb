@@ -30,11 +30,9 @@ RSpec.configure do |config|
           # in order to actually be affected by Timecop.
           Timecop.freeze(now.year, now.month, now.day, hour, minute, second) do
             # Let the original example be the final repetition
-            example = if run_count < total
-              original_example.duplicate_with
-            else
-              original_example
-            end
+            last_run = run_count == total
+            example = last_run ? original_example : original_example.duplicate_with
+            # Run example with a helpful description
             describe_time_of_day(example, hour, minute, second)
             example.run(original_example.example_group_instance, original_example.reporter)
           end
@@ -64,11 +62,9 @@ RSpec.configure do |config|
       test_time = Time.at(test_time_float + millisecond.to_f / 1000)
       Timecop.travel(test_time) do
         # Let the original example be the final repetition
-        example = if millisecond < 1000
-          original_example.duplicate_with
-        else
-          original_example
-        end
+        last_run = millisecond == 1000
+        example = last_run ? original_example : original_example.duplicate_with
+        # Run example with a helpful description
         describe_exact_time(example, test_time)
         example.run(original_example.example_group_instance, original_example.reporter)
       end
@@ -87,11 +83,10 @@ RSpec.configure do |config|
     time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
     time_multipliers.each do |seconds_multiplier|
       Timecop.scale(seconds_multiplier) do
-        example = if (seconds_multiplier != time_multipliers.last)
-          original_example.duplicate_with
-        else
-          original_example
-        end
+        # Let the original example be the final repetition
+        last_run = seconds_multiplier == time_multipliers.last
+        example = last_run ? original_example : original_example.duplicate_with
+        # Run example with a helpful description
         describe_time_elapsed(example, seconds_multiplier)
         example.run(original_example.example_group_instance, original_example.reporter)
       end
@@ -118,12 +113,10 @@ RSpec.configure do |config|
         # We need to run the test within the Timecop.freeze block,
         # in order to actually be affected by Timecop.
         Timecop.travel(adjusted_time) do
-          run_count = (hour_index * 2) + minute_index
-          example = if run_count < total
-            original_example.duplicate_with
-          else
-            original_example
-          end
+          # Let the original example be the final repetition
+          last_run = (hour_index * 2) + minute_index == total
+          example = last_run ? original_example : original_example.duplicate_with
+          # Run example with a helpful description
           describe_time_zone(example, time_zone_hour, time_zone_minute)
           example.run(original_example.example_group_instance, original_example.reporter)
         end
@@ -132,7 +125,6 @@ RSpec.configure do |config|
   end
 
   config.around(repetitions: true) do |original_example|
-    # Fetch the number of repetitions to try...
     repetitions = original_example.metadata.delete(:repetitions)
     total = repetitions.is_a?(Integer) ? repetitions : 1000
 
@@ -142,11 +134,9 @@ RSpec.configure do |config|
 
     (1..total).each do |count|
       # Let the original example be the final repetition
-      example = if count < total
-        original_example.duplicate_with
-      else
-        original_example
-      end
+      last_run = count == total
+      example = last_run ? original_example : original_example.duplicate_with
+      # Run example with a helpful description
       describe_repetition_count(example, count, total)
       example.run(original_example.example_group_instance, original_example.reporter)
     end
