@@ -39,7 +39,7 @@ RSpec.configure do |config|
     total = hours_to_run.size + (minutes_to_run.size - 1) + (seconds_to_run.size - 1)
     run_count = 0
 
-    # Append the time of day to our test description, so we can see it.
+    # Add time of day to our test description
     def modify_description(test, hour, minute, second)
       test.metadata[:description] = "Run Time #{hour}:#{minute}:#{second}: #{test.metadata[:description]}"
     end
@@ -72,32 +72,37 @@ RSpec.configure do |config|
 
   config.around(surrounding_time: true) do |original_example|
     now = Time.now
-    test_surrounding_time = original_example.metadata[:surrounding_time]
-    hour = test_surrounding_time.fetch(:hour, now.hour)
-    minute = test_surrounding_time.fetch(:minute, now.min)
-    second = test_surrounding_time.fetch(:second, now.sec)
-    # 1000 milliseconds before & after the given time
+    surrounding_time = original_example.metadata[:surrounding_time]
+    hour = surrounding_time.fetch(:hour, now.hour)
+    minute = surrounding_time.fetch(:minute, now.min)
+    second = surrounding_time.fetch(:second, now.sec)
+    # 1000 milliseconds before & after the surrounding time
     test_time_float = Time.local(now.year, now.month, now.day, hour, minute, second).to_f
+
+    # Add exact time to our test description
+    def modify_description(test, time)
+      test.metadata[:description] = "Run Time #{time.strftime('%H:%M:%S:%L')}: #{test.metadata[:description]}"
+    end
+
     (-1000..1000).each do |millisecond|
-      # Duplicate the current original_example, ensuring this tag doesn't trigger...
-      repetition = original_example.duplicate_with(surrounding_time: false)
-      test_time = Time.at(test_time_float + millisecond.to_f / 1000)
       # Travel to the specified hour, minute, second, and millisecond, allowing
       # for time to elapse.
-
+      # We need to run the test within the Timecop.freeze block,
+      # in order to actually be affected by Timecop. If we didn't need to
+      # be inside this block, we could add the original_example to a context (as we
+      # do for repetitions) and let RSpec run it.
+      test_time = Time.at(test_time_float + millisecond.to_f / 1000)
       Timecop.travel(test_time) do
-        # Append the time of day to our test description, so we can see it.
-        repetition.metadata[:description] += " (Run Time #{test_time.strftime('%H:%M:%S:%L')})"
-        # We need to run the test within the Timecop.freeze block,
-        # in order to actually be affected by Timecop. If we didn't need to
-        # be inside this block, we could add the original_example to a context (as we
-        # do for repetitions) and let RSpec run it.
-        repetition.run(original_example.example_group_instance, original_example.reporter)
+        # Let the original example be the final repetition
+        example = if millisecond < 1000
+          original_example.duplicate_with(surrounding_time: false) # ensure tag doesn't trigger
+        else
+          original_example
+        end
+        modify_description(example, test_time)
+        example.run(original_example.example_group_instance, original_example.reporter)
       end
     end
-    # Remove the original original_example; it wouldn't hurt to leave, but we're already
-    # running it a number of times.
-    original_example.example_group.remove_example(original_example)
   end
 
   config.around(elapsed_time: true) do |original_example|
