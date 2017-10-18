@@ -8,7 +8,7 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests a certain number of times' do
-    # Should run 20x and fail ~ 14x
+    # Should run 20x and fail ~14x
     it 'allows specifying a number of repetitions', repetitions: 20 do
       expect(rand(1..3)).to eq 1
     end
