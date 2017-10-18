@@ -48,6 +48,7 @@ RSpec.describe MarshGrass do
 
   context 'running tests surrounding a particular time' do
     # Should run 1000x before passed time and fail last ~ 50x
+    # Should run 1x 'on' the particular time and pass
     # Should run 1000x after passed time and never fail
     it 'allows testing for time surrounding midnight', surrounding_time: { hour: 0, minute: 0, second: 0 } do
       now = Time.now
@@ -56,8 +57,8 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests for variable elapsed time' do
-    # Should run 10x and fail ?x
-    # (depending on where in the milliseconds you run, does 0.2 push it over to next second?)
+    # Should run 10x and fail ?x (usually roughly half: depending on where in the
+    # milliseconds you run, does 0.2 scaled by elapsed push it over to next second?)
     it 'allows testing for time-dependent methods across default duration multipliers', :elapsed_time do
       expect { sleep 0.2 }.to change { Time.now.to_i }.by(1)
     end
@@ -76,13 +77,14 @@ RSpec.describe MarshGrass do
   end
 
   context 'combining test scenarios' do
-    # Should run (20 * 24)x and fail 66%
-    it 'runs repetitions of iterations on hours', repetitions: 20, time_of_day: :hours do
+    # Should run (10 * 24) = 240x and fail 66%
+    it 'runs repetitions of iterations on hours', repetitions: 10, time_of_day: :hours do
       expect(rand(1..3)).to eq 1
     end
 
-    # Should run (2 * 1000)x before passed time and fail last ~ (3 * 50)x
-    # Should run (2 * 1000)x after passed time and never fail
+    # Should run (2 * 1000) = 2000x before chosen time and fail last ~ (3 * 50)x
+    # Should run 2x at chosen time and pass
+    # Should run (2 * 1000) = 2000x after chosen time and never fail
     it 'runs slowly and time approaches midnight', elapsed_time: (1..2), surrounding_time: { hour: 0, minute: 0, second: 0 } do
       now = Time.now
       expect { sleep 0.05 }.not_to change { Time.now.day }.from(now.day)
