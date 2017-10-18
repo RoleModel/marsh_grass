@@ -2,24 +2,29 @@
 
 require 'rspec'
 require 'timecop'
+require 'pry'
 
 RSpec.configure do |config|
+
   config.around(repetitions: true) do |example|
     # Fetch the number of repetitions to try...
     repetitions = example.metadata[:repetitions]
-    total = repetitions.is_a?(Integer) ? repetitions : 20
-    total.times do |repetition_num|
+    total = repetitions.is_a?(Integer) ? repetitions : 1000
+    # Description of test to repeat
+    description = example.metadata[:description]
+    # Add repetition count to description
+    def describe(test, count, total)
+      test.metadata[:description] = "Repetition #{count} of #{total}: #{test.metadata[:description]}"
+    end
+
+    (total - 1).times do |repetition_num|
       # Duplicate the current example, ensuring this tag doesn't trigger...
       repetition = example.duplicate_with(repetitions: false)
-      # Add some additional context...
-      description = "(Repetition ##{repetition_num + 1} of #{total})"
-      context = example.example_group.context(description)
-      # Insert the copy into our new context...
-      context.add_example(repetition)
+      describe(repetition, repetition_num + 1, total)
+      repetition.run(example.example_group_instance, example.reporter)
     end
-    # Remove the original example; it wouldn't hurt to leave, but we're already
-    # running it a number of times.
-    example.example_group.remove_example(example)
+    describe(example, total, total)
+    example.run
   end
 
   config.around(time_of_day: true) do |example|
