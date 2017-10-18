@@ -10,20 +10,18 @@ RSpec.configure do |config|
     # Fetch the number of repetitions to try...
     repetitions = example.metadata[:repetitions]
     total = repetitions.is_a?(Integer) ? repetitions : 1000
-    # Description of test to repeat
-    description = example.metadata[:description]
     # Add repetition count to description
-    def describe(test, count, total)
+    def modify_description(test, count, total)
       test.metadata[:description] = "Repetition #{count} of #{total}: #{test.metadata[:description]}"
     end
 
     (total - 1).times do |repetition_num|
       # Duplicate the current example, ensuring this tag doesn't trigger...
       repetition = example.duplicate_with(repetitions: false)
-      describe(repetition, repetition_num + 1, total)
+      modify_description(repetition, repetition_num + 1, total)
       repetition.run(example.example_group_instance, example.reporter)
     end
-    describe(example, total, total)
+    modify_description(example, total, total)
     example.run
   end
 
