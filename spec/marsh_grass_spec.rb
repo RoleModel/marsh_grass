@@ -69,7 +69,8 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests for variations in timezone' do
-    it 'allows testing for all timezone variations', :timezones do
+    # Should run 54x and fail 4
+    it 'allows testing for all timezone variations', :time_zones do
       expect(Time.now.hour).not_to eq(1)
     end
   end
