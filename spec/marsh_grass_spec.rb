@@ -7,6 +7,38 @@ RSpec.describe MarshGrass do
     expect(MarshGrass::VERSION).not_to be nil
   end
 
+  context 'test purity' do
+    # Should always pass
+    it 'forgets instance variables between tests with repetitions', :repetitions do
+      expect(@forgettable_thing).to be nil
+      @forgettable_thing = 'something'
+    end
+
+    # # Should always pass
+    it 'forgets instance variables between tests with time_of_day', :time_of_day do
+      expect(@forgettable_thing).to be nil
+      @forgettable_thing = 'something'
+    end
+
+    # Should always pass
+    it 'forgets instance variables between tests with surrounding_time', surrounding_time: { hour: 0, minute: 0, second: 0 } do
+      expect(@forgettable_thing).to be nil
+      @forgettable_thing = 'something'
+    end
+
+    # Should always pass
+    it 'forgets instance variables between tests with elapsed_time', :elapsed_time do
+      expect(@forgettable_thing).to be nil
+      @forgettable_thing = 'something'
+    end
+
+    # Should always pass
+    it 'forgets instance variables between with time_zones', :time_zones do
+      expect(@forgettable_thing).to be nil
+      @forgettable_thing = 'something'
+    end
+  end
+
   context 'running tests a certain number of times' do
     # Should run 20x and fail ~14x
     it 'allows specifying a number of repetitions', repetitions: 20 do
