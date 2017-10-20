@@ -5,9 +5,14 @@ require 'timecop'
 require 'pry'
 
 RSpec.configure do |config|
+  def untag_example(example, tag)
+    example.example_group.metadata.delete(tag) if example.metadata[:turnip]
+    example.metadata.delete(tag)
+  end
+
   config.around(time_of_day: true) do |original_example|
     now = Time.now
-    time_of_day = original_example.metadata.delete(:time_of_day)
+    time_of_day = untag_example(original_example, :time_of_day)
     test_segments = time_of_day.is_a?(Array) ? time_of_day : [time_of_day]
     test_segments = [:hours] if test_segments == [true]
     hours_to_run = test_segments.include?(:hours) ? (0..23) : [now.hour]
@@ -43,7 +48,7 @@ RSpec.configure do |config|
 
   config.around(surrounding_time: true) do |original_example|
     now = Time.now
-    surrounding_time = original_example.metadata.delete(:surrounding_time)
+    surrounding_time = untag_example(original_example, :surrounding_time)
     hour = surrounding_time.fetch(:hour, now.hour)
     minute = surrounding_time.fetch(:minute, now.min)
     second = surrounding_time.fetch(:second, now.sec)
@@ -79,7 +84,7 @@ RSpec.configure do |config|
     # Freeze time at the specified hour, minute, and/or second.
     # We need to run the test within the Timecop.freeze block,
     # in order to actually be affected by Timecop.
-    time_multipliers = original_example.metadata.delete(:elapsed_time)
+    time_multipliers = untag_example(original_example, :elapsed_time)
     time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
     time_multipliers.each do |seconds_multiplier|
       Timecop.scale(seconds_multiplier) do
@@ -94,7 +99,7 @@ RSpec.configure do |config|
   end
 
   config.around(time_zones: true) do |original_example|
-    original_example.metadata.delete(:time_zones)
+    untag_example(original_example, :time_zones)
 
     utc = Time.now.utc
     time_zone_hours = %w[-12 -11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 +00 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 +11 +12 +13 +14]
@@ -125,7 +130,7 @@ RSpec.configure do |config|
   end
 
   config.around(repetitions: true) do |original_example|
-    repetitions = original_example.metadata.delete(:repetitions)
+    repetitions = untag_example(original_example, :repetitions)
     total = repetitions.is_a?(Integer) ? repetitions : 1000
 
     def describe_repetition_count(test, count, total)
