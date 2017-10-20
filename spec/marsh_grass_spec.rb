@@ -12,6 +12,11 @@ RSpec.describe MarshGrass do
     it 'allows specifying a number of repetitions', repetitions: 20 do
       expect(rand(1..3)).to eq 1
     end
+
+    # Should run 1000x and fail 66%
+    it 'allows running a default number of repetitions', :repetitions do
+      expect(rand(1..3)).to eq 1
+    end
   end
 
   context 'running tests at a certain time of day' do
