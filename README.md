@@ -46,9 +46,9 @@ Feature use:
 - Times of day (default: all hours, minutes, seconds or specify :hours, :minutes, :seconds)
 - Time zones (executes against all hour and half-hour time zones)
 - Elapsed time during test execution (default: (1..10) execution slow-down multipliers or specify range)
-- Surrounding time, i.e., clock change over during the test (must specify hour: <integer>, minute: <integer>, second: <integer>)*
+- Surrounding time, i.e., clock change over during the test (must specify hour: <integer>, minute: <integer>, second: <integer>)
 
-* Runs test at every millisecond from 1 sec before to 1 sec after specified time... particularly useful for discerning rate of failure surrounding midnight
+Surrounding time runs test at every millisecond from 1 sec before to 1 sec after specified time. This is particularly useful for discerning rate of failure near and at midnight.
 
 ### Examples
 Simple example:
