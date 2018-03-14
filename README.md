@@ -2,15 +2,15 @@
 
 Finally! A way to examine the behavior of intermittent failures in RSpec.
 
-This gem allows you to subject a particular test to a variety of circumstances in order to discern what combination of events leads to the failure.
+This gem allows you to subject an intermittently failing test to a variety of circumstances in order to discern what combination of events leads to failure.
 
 ## Background
 
-Intermittent failures are challenging because the circumstances which lead to the failure are more difficult to pinpoint than with tests that fail 100% of the time.
+Intermittent failures are challenging because the failure conditions are more difficult to pinpoint than with tests that fail 100% of the time.
 
 Intermittent failures are also more likely to make it into production. They often pass during CI testing and code review and then crop up days or weeks later.
 
-In programming, there is no such thing as a "random" failure. Every intermittent failure actually fails consistently, every single time... under the right set of circumstances. Perhaps your test only fails on Friday afternoons. Or, 10% of the time under race conditions. We once had a test that failed on every power of 2 run: on the 2nd, 4th, 16th, 64th run, etc.
+In programming, there is no such thing as a "random" failure. Every intermittent failure actually fails consistently, every single time... under the right set of circumstances. Perhaps your test only fails on Friday afternoons. Or, 10% of the time under race conditions. We once had a test that failed on every power of 2 run: on the 2nd, 4th, 8th, 16th run, etc. The more we ran it, the more elusive it became.
 
 Often, the first step in fixing such a failure is to make it fail consistently. That way, as you change your code, you can use the test to confirm when you've fixed the root cause. After all, that is the purpose of the test!
 
@@ -53,11 +53,11 @@ Surrounding time runs test at every millisecond from 1 sec before to 1 sec after
 ### Examples
 Simple example:
 ```ruby
-it 'uses default repetitions' :repetitions do
+it 'uses default repetitions', :repetitions do
  ...
 end
 
-it 'uses specific repetitions' repetitions: 20 do
+it 'uses specific repetitions', repetitions: 20 do
   ...
 end
 ```
