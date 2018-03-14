@@ -2,7 +2,7 @@
 
 Finally! A way to examine the behavior of intermittent failures in RSpec.
 
-This gem allows you to subject an intermittently failing test to a variety of circumstances in order to discern what combination of events leads to failure.
+This gem allows you to subject an intermittently failing test to a variety of circumstances in an attempt to discern what combination of events leads to failure.
 
 ## Background
 
@@ -22,7 +22,7 @@ This gem subjects a given test to the following circumstances:
 - execution in all time zones
 - execution at all the milliseconds surrounding a particular time of day
 
-In our experience, repetitions is the option we use the most often.
+In our experience, repetitions is the option we use the most often. It gives the broadest feedback and is very effective at uncovering race conditions.
 
 ## Installation
 
