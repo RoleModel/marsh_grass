@@ -65,7 +65,7 @@ end
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/wesrich/marsh_grass.
+Bug reports and pull requests are welcome on GitHub at https://github.com/RoleModel/marsh_grass.
 
 ## License
 
