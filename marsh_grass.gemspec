@@ -10,11 +10,11 @@ Gem::Specification.new do |spec|
   spec.version       = MarshGrass::VERSION
   spec.authors       = [
     'Wes Rich',
-    'Amanda Simon'
+    'Amanda Pouget'
   ]
   spec.email         = [
     'wes.rich@rolemodelsoftware.com',
-    'amanda.simon@rolemodelsoftware.com'
+    'amanda.pouget@rolemodelsoftware.com'
   ]
 
   spec.summary       = %q{A set of tools to help diagnose random test failures.}
