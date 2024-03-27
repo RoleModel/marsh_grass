@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require 'rspec'
-require 'timecop'
-require 'pry'
+require 'time'
 
 RSpec.configure do |config|
   def untag_example(example, tag)
@@ -39,7 +38,9 @@ RSpec.configure do |config|
           # Freeze time at the specified hour, minute, and/or second.
           # We need to run the test within the Timecop.freeze block,
           # in order to actually be affected by Timecop.
-          Timecop.freeze(now.year, now.month, now.day, hour, minute, second) do
+          freeze_time()
+          example_time = DateTime.new(now.year, now.month, now.day, hour, minute, second)
+          travel_to(example_time) do
             test_description = "Run Time #{hour}:#{minute}:#{second}: #{shared_description}"
             run_example_or_duplicate(original_example, test_description)
           end
@@ -65,25 +66,8 @@ RSpec.configure do |config|
       # We need to run the test within the Timecop.freeze block,
       # in order to actually be affected by Timecop.
       test_time = Time.at(test_time_float + millisecond.to_f / 1000)
-      Timecop.travel(test_time) do
+      travel_to(test_time) do
         test_description = "Run Time #{test_time.strftime('%H:%M:%S:%L')}: #{shared_description}"
-        run_example_or_duplicate(original_example, test_description)
-      end
-    end
-  end
-
-  config.around(elapsed_time: true) do |original_example|
-    shared_description = original_example.metadata[:description]
-
-    # Freeze time at the specified hour, minute, and/or second.
-    # We need to run the test within the Timecop.freeze block,
-    # in order to actually be affected by Timecop.
-    time_multipliers = untag_example(original_example, :elapsed_time)
-    time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
-
-    time_multipliers.each do |seconds_multiplier|
-      Timecop.scale(seconds_multiplier) do
-        test_description = "Run Speed #{seconds_multiplier}x Slower: #{shared_description}"
         run_example_or_duplicate(original_example, test_description)
       end
     end
@@ -103,7 +87,7 @@ RSpec.configure do |config|
         # in order to actually be affected by Timecop.
         adjustment = "#{time_zone_hour}:#{time_zone_minute}"
         adjusted_time = Time.new(utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec, adjustment)
-        Timecop.travel(adjusted_time) do
+        travel_to(adjusted_time) do
           test_description = "Time Zone Offset #{time_zone_hour}:#{time_zone_minute}: #{shared_description}"
           run_example_or_duplicate(original_example, test_description)
         end
