@@ -130,12 +130,18 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests surrounding a particular time' do
-    # Should run 1000x before passed time and fail last ~ 50x
-    # Should run 1x 'on' the particular time and pass
-    # Should run 1000x after passed time and never fail
+    millisecond_hundreths = []
+    after(:all) do
+      # assert that the repetitions were run
+      expect(millisecond_hundreths.length).to eq 2001
+      expect(millisecond_hundreths.uniq.sort).to eq (0..9).to_a.map(&:to_s)
+    end
+
+    # Should run 1000x before passed time
+    # Should run 1x 'on' the particular time
+    # Should run 1000x after passed time
     it 'allows testing for time surrounding midnight', surrounding_time: { hour: 0, minute: 0, second: 0 } do
-      now = Time.now
-      expect { sleep 0.05 }.not_to change { Time.now.day }.from(now.day)
+      millisecond_hundreths << Time.now.strftime('%L')[0]
     end
   end
 

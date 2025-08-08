@@ -40,9 +40,9 @@ RSpec.configure do |config|
     hours_to_run.each do |hour|
       minutes_to_run.each do |minute|
         seconds_to_run.each do |second|
-          timeblock = [hour, minute, second].compact.join(':')
-          test_description = "Run Time #{timeblock}: #{shared_description}"
-          add_example_to_group(original_example, test_description, timeblock:)
+          frozen_time = Time.new(now.year, now.month, now.day, hour, minute, second)
+          test_description = "Run Time #{frozen_time.strftime('%H:%M:%S')}: #{shared_description}"
+          add_example_to_group(original_example, test_description, frozen_time: frozen_time.to_s)
 
           # To avoid the original example being shown as "PENDING", mark it as executed
           original_example.instance_variable_set(:@executed, true)
@@ -51,16 +51,23 @@ RSpec.configure do |config|
     end
   end
 
-  config.before(:each, timeblock: true) do |example|
-    now = Time.now
-    hour, minute, second = example.metadata[:timeblock].split(':').map(&:to_i)
+  config.before(:each, frozen_time: true) do |example|
+    time = Time.parse(example.metadata[:frozen_time])
     # Freeze time at the specified hour, minute, and/or second.
-    # We need to run the test within the Timecop.freeze block,
-    # in order to actually be affected by Timecop.
-    Timecop.freeze(now.year, now.month, now.day, hour, minute, second)
+    Timecop.freeze(time)
   end
 
-  config.after(:each, timeblock: true) do
+  config.after(:each, frozen_time: true) do
+    Timecop.return
+  end
+
+  config.before(:each, moving_time: true) do |example|
+    time = Time.parse(example.metadata[:moving_time])
+    # Travel to time at the specified hour, minute, and/or second.
+    Timecop.travel(time)
+  end
+
+  config.after(:each, moving_time: true) do
     Timecop.return
   end
 
@@ -78,13 +85,13 @@ RSpec.configure do |config|
     (-1000..1000).each do |millisecond|
       # Travel to the specified hour, minute, second, and millisecond, allowing
       # for time to elapse.
-      # We need to run the test within the Timecop.freeze block,
-      # in order to actually be affected by Timecop.
-      test_time = Time.at(test_time_float + millisecond.to_f / 1000)
-      travel_to(test_time) do
-        test_description = "Run Time #{test_time.strftime('%H:%M:%S:%L')}: #{shared_description}"
-        run_example_or_duplicate(original_example, test_description)
-      end
+      moving_time = Time.at(test_time_float + millisecond.to_f / 1000)
+      test_description = "Run Time #{moving_time.strftime('%H:%M:%S:%L')}: #{shared_description}"
+      moving_time_string = moving_time.strftime('%Y-%m-%d %H:%M:%S.%L %z')
+      add_example_to_group(original_example, test_description, moving_time: moving_time_string)
+
+      # To avoid the original example being shown as "PENDING", mark it as executed
+      original_example.instance_variable_set(:@executed, true)
     end
   end
 
