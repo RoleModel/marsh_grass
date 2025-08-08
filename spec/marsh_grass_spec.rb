@@ -14,7 +14,7 @@ RSpec.describe MarshGrass do
       @forgettable_thing = 'something'
     end
 
-    # # Should always pass
+    # Should always pass
     it 'forgets instance variables between tests with time_of_day', :time_of_day do
       expect(@forgettable_thing).to be nil
       @forgettable_thing = 'something'
@@ -40,14 +40,24 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests a certain number of times' do
-    # Should run 20x and fail ~14x
-    it 'allows specifying a number of repetitions', repetitions: 20 do
-      expect(rand(1..3)).to eq 1
+    repetition_5_count = 0
+    repetition_1000_count = 0
+    after(:all) do
+      # assert that the repetitions were run
+      expect(repetition_5_count).to eq 5
+      expect(repetition_1000_count).to eq 1000
     end
 
-    # Should run 1000x and fail 66%
+    # Should run 5x
+    it 'runs the specified number of repetitions', repetitions: 5 do
+      repetition_5_count += 1
+      expect(repetition_5_count).to be <= 5
+    end
+
+    # Should run 1000x
     it 'allows running a default number of repetitions', :repetitions do
-      expect(rand(1..3)).to eq 1
+      repetition_1000_count += 1
+      expect(repetition_1000_count).to be <= 1000
     end
   end
 
