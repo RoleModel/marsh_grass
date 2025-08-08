@@ -51,26 +51,6 @@ RSpec.configure do |config|
     end
   end
 
-  config.before(:each, frozen_time: true) do |example|
-    time = Time.parse(example.metadata[:frozen_time])
-    # Freeze time at the specified hour, minute, and/or second.
-    Timecop.freeze(time)
-  end
-
-  config.after(:each, frozen_time: true) do
-    Timecop.return
-  end
-
-  config.before(:each, moving_time: true) do |example|
-    time = Time.parse(example.metadata[:moving_time])
-    # Travel to time at the specified hour, minute, and/or second.
-    Timecop.travel(time)
-  end
-
-  config.after(:each, moving_time: true) do
-    Timecop.return
-  end
-
   config.around(surrounding_time: true) do |original_example|
     shared_description = original_example.metadata[:description]
 
@@ -99,21 +79,16 @@ RSpec.configure do |config|
     shared_description = original_example.metadata[:description]
     untag_example(original_example, :time_zones)
 
-    utc = Time.now.utc
-    time_zone_hours = %w[-12 -11 -10 -09 -08 -07 -06 -05 -04 -03 -02 -01 +00 +01 +02 +03 +04 +05 +06 +07 +08 +09 +10 +11 +12 +13 +14]
-    time_zone_minutes = %w[00 30]
+    timezone_hash = ActiveSupport::TimeZone.all.each_with_object({}) do |tz, memo|
+      memo[tz.formatted_offset] = tz.name
+    end
 
-    time_zone_hours.each do |time_zone_hour|
-      time_zone_minutes.each do |time_zone_minute|
-        # We need to run the test within the Timecop.freeze block,
-        # in order to actually be affected by Timecop.
-        adjustment = "#{time_zone_hour}:#{time_zone_minute}"
-        adjusted_time = Time.new(utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec, adjustment)
-        travel_to(adjusted_time) do
-          test_description = "Time Zone Offset #{time_zone_hour}:#{time_zone_minute}: #{shared_description}"
-          run_example_or_duplicate(original_example, test_description)
-        end
-      end
+    timezone_hash.each do |time_zone_offset, time_zone_name|
+      test_description = "Time Zone Offset #{time_zone_offset}: #{shared_description}"
+      add_example_to_group(original_example, test_description, time_zone: time_zone_name)
+
+      # To avoid the original example being shown as "PENDING", mark it as executed
+      original_example.instance_variable_set(:@executed, true)
     end
   end
 
@@ -127,5 +102,35 @@ RSpec.configure do |config|
       test_description = "Repetition #{count} of #{total}: #{shared_description}"
       run_example_or_duplicate(original_example, test_description)
     end
+  end
+
+  config.before(:each, frozen_time: true) do |example|
+    time = Time.parse(example.metadata[:frozen_time])
+    # Freeze time at the specified hour, minute, and/or second.
+    Timecop.freeze(time)
+  end
+
+  config.after(:each, frozen_time: true) do
+    Timecop.return
+  end
+
+  config.before(:each, moving_time: true) do |example|
+    time = Time.parse(example.metadata[:moving_time])
+    # Travel to time at the specified hour, minute, and/or second.
+    Timecop.travel(time)
+  end
+
+  config.after(:each, time_zone: true) do
+    Timecop.return
+  end
+
+  config.before(:each, time_zone: true) do |example|
+    ENV['OLD_TIME_ZONE'] = Time.zone&.name
+    # Switch to the given time zone for the duration of the example.
+    Time.zone = example.metadata[:time_zone]
+  end
+
+  config.after(:each, time_zone: true) do
+    Time.zone = ENV['OLD_TIME_ZONE']
   end
 end

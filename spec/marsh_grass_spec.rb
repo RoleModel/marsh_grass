@@ -145,7 +145,22 @@ RSpec.describe MarshGrass do
     end
   end
 
-  context 'combining test scenarios' do
+  context 'running tests for variations in timezone' do
+    timezone_hours = []
+    after(:all) do
+      # assert that the repetitions were run
+      expect(timezone_hours.length).to eq 34
+      offsets = %w[+00:00 +01:00 +02:00 +03:00 +03:30 +04:00 +04:30 +05:00 +05:30 +05:45 +06:00 +06:30 +07:00 +08:00 +09:00 +09:30 +10:00 +11:00 +12:00 +12:45 +13:00 -01:00 -02:00 -03:00 -03:30 -04:00 -05:00 -06:00 -07:00 -08:00 -09:00 -10:00 -11:00 -12:00]
+      expect(timezone_hours.uniq.sort).to eq offsets
+    end
+
+    # Should run 34x
+    it 'allows testing for all timezone variations', :time_zones do
+      timezone_hours << Time.zone.formatted_offset
+    end
+  end
+
+  xcontext 'combining test scenarios' do
     # Should run (10 * 24) = 240x and fail 66%
     it 'runs repetitions of iterations on hours', repetitions: 10, time_of_day: :hours do
       expect(rand(1..3)).to eq 1
