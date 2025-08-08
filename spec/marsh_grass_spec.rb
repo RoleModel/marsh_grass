@@ -62,33 +62,62 @@ RSpec.describe MarshGrass do
   end
 
   context 'running tests at a certain time of day' do
-    # Should run 24x and fail 1x
+    hours_to_run = []
+    minutes_to_run = []
+    seconds_to_run = []
+    hours_and_minutes_to_run = []
+    minutes_and_seconds_to_run = []
+    after(:all) do
+      # assert that the hours were run
+      expect(hours_to_run.length).to eq 24
+      expect(hours_to_run).to match_array (0..23).to_a
+      # assert that the minutes were run
+      expect(minutes_to_run.length).to eq 60
+      expect(minutes_to_run).to match_array (0..59).to_a
+      # assert that the seconds were run
+      expect(seconds_to_run.length).to eq 60
+      expect(seconds_to_run).to match_array (0..59).to_a
+      # assert that the hours & minutes were run
+      expect(hours_and_minutes_to_run.length).to eq 24 * 60
+      def make_time(first, second)
+        [first.to_s.rjust(2, '0'), second.to_s.rjust(2, '0')].join(':')
+      end
+      expected_hours_and_minutes = (0..23).to_a.map { |h| (0..59).map { |m| make_time(h, m) } }.flatten
+      expect(hours_and_minutes_to_run).to match_array expected_hours_and_minutes
+      # assert that the minutes & seconds were run
+      expect(minutes_and_seconds_to_run.length).to eq 60 * 60
+      expected_minutes_and_seconds = (0..59).to_a.map { |m| (0..59).map { |s| make_time(m, s) } }.flatten
+      expect(minutes_and_seconds_to_run).to match_array expected_minutes_and_seconds
+    end
+
+    # Should run 24x and have all hours of the day
     it 'allows testing against an iteration of hours', time_of_day: :hours do
-      expect(Time.now.hour).not_to eq(10)
+      hours_to_run << Time.now.hour
     end
 
-    # Should run 60x and fail 1x
+    # Should run 60x and have all minutes of the hour
     it 'allows testing against an iteration of minutes', time_of_day: :minutes do
-      expect(Time.now.min).not_to eq(25)
+      minutes_to_run << Time.now.min
     end
 
-    # Should run 60x and fail 1x
+    # Should run 60x and have all seconds of the minute
     it 'allows testing against an iteration of seconds', time_of_day: :seconds do
-      expect(Time.now.sec).not_to eq(44)
+      seconds_to_run << Time.now.sec
     end
 
-    # Should run (24 * 60) = 1440x and fail 1x
-    it 'allows testing against an iteration of hours and minutes', time_of_day: [:hours, :minutes] do
-      expect(Time.now.strftime('%H:%M')).not_to eq('10:25')
+    # Should run (24 * 60) = 1440x and have all hours and minutes of the day
+    it 'allows testing against an iteration of hours and minutes', time_of_day: %i[hours minutes] do
+      hours_and_minutes_to_run << Time.now.strftime('%H:%M')
     end
 
-    # Should run (60 * 60) = 3600x and fail 1x
-    it 'allows testing against an iteration of minutes and seconds', time_of_day: [:minutes, :seconds] do
-      expect(Time.now.strftime('%M:%S')).not_to eq('25:44')
+    # Should run (60 * 60) = 3600x and have all minutes and seconds of the day
+    it 'allows testing against an iteration of minutes and seconds', time_of_day: %i[minutes seconds] do
+      minutes_and_seconds_to_run << Time.now.strftime('%M:%S')
     end
 
-    # Should run (24 * 60 * 60) = 86400x and fail 1x
-    it 'allows testing against an iteration of hours, minutes, and seconds', time_of_day: [:hours, :minutes, :seconds] do
+    # Should run (24 * 60 * 60) = 86400x and have all hours, minutes, and seconds of the day
+    # This test is too slow to run by default, so it is commented out.
+    xit 'allows testing against an iteration of hours, minutes, and seconds', time_of_day: %i[hours minutes seconds] do
       expect(Time.now.strftime('%H:%M:%S')).not_to eq('10:25:44')
     end
   end

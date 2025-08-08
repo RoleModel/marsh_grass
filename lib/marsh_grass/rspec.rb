@@ -2,11 +2,18 @@
 
 require 'rspec'
 require 'time'
+require 'timecop'
 
 RSpec.configure do |config|
   def untag_example(example, tag)
     example.example_group.metadata.delete(tag) if example.metadata[:turnip]
     example.metadata.delete(tag)
+  end
+
+  def add_example_to_group(original_example, test_description, metadata_overrides = {})
+    repetition = original_example.duplicate_with(metadata_overrides)
+    repetition.metadata[:description] = test_description
+    original_example.example_group.context.add_example(repetition)
   end
 
   def run_example_or_duplicate(original_example, test_description)
@@ -15,9 +22,7 @@ RSpec.configure do |config|
       original_example.metadata[:description] = test_description
       original_example.run
     else
-      repetition = original_example.duplicate_with
-      repetition.metadata[:description] = test_description
-      original_example.example_group.context.add_example(repetition)
+      add_example_to_group(original_example, test_description)
     end
   end
 
@@ -35,18 +40,28 @@ RSpec.configure do |config|
     hours_to_run.each do |hour|
       minutes_to_run.each do |minute|
         seconds_to_run.each do |second|
-          # Freeze time at the specified hour, minute, and/or second.
-          # We need to run the test within the Timecop.freeze block,
-          # in order to actually be affected by Timecop.
-          freeze_time()
-          example_time = DateTime.new(now.year, now.month, now.day, hour, minute, second)
-          travel_to(example_time) do
-            test_description = "Run Time #{hour}:#{minute}:#{second}: #{shared_description}"
-            run_example_or_duplicate(original_example, test_description)
-          end
+          timeblock = [hour, minute, second].compact.join(':')
+          test_description = "Run Time #{timeblock}: #{shared_description}"
+          add_example_to_group(original_example, test_description, timeblock:)
+
+          # To avoid the original example being shown as "PENDING", mark it as executed
+          original_example.instance_variable_set(:@executed, true)
         end
       end
     end
+  end
+
+  config.before(:each, timeblock: true) do |example|
+    now = Time.now
+    hour, minute, second = example.metadata[:timeblock].split(':').map(&:to_i)
+    # Freeze time at the specified hour, minute, and/or second.
+    # We need to run the test within the Timecop.freeze block,
+    # in order to actually be affected by Timecop.
+    Timecop.freeze(now.year, now.month, now.day, hour, minute, second)
+  end
+
+  config.after(:each, timeblock: true) do
+    Timecop.return
   end
 
   config.around(surrounding_time: true) do |original_example|
