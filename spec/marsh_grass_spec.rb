@@ -67,6 +67,7 @@ RSpec.describe MarshGrass do
     seconds_to_run = []
     hours_and_minutes_to_run = []
     minutes_and_seconds_to_run = []
+    hours_minutes_and_seconds_to_run = []
     after(:all) do
       # assert that the hours were run
       expect(hours_to_run.length).to eq 24
@@ -77,17 +78,23 @@ RSpec.describe MarshGrass do
       # assert that the seconds were run
       expect(seconds_to_run.length).to eq 60
       expect(seconds_to_run).to match_array (0..59).to_a
-      # assert that the hours & minutes were run
-      expect(hours_and_minutes_to_run.length).to eq 24 * 60
+
       def make_time(first, second)
         [first.to_s.rjust(2, '0'), second.to_s.rjust(2, '0')].join(':')
       end
+
+      # assert that the hours & minutes were run
+      expect(hours_and_minutes_to_run.length).to eq 24 * 60
       expected_hours_and_minutes = (0..23).to_a.map { |h| (0..59).map { |m| make_time(h, m) } }.flatten
       expect(hours_and_minutes_to_run).to match_array expected_hours_and_minutes
       # assert that the minutes & seconds were run
       expect(minutes_and_seconds_to_run.length).to eq 60 * 60
       expected_minutes_and_seconds = (0..59).to_a.map { |m| (0..59).map { |s| make_time(m, s) } }.flatten
       expect(minutes_and_seconds_to_run).to match_array expected_minutes_and_seconds
+      # assert that the hours, minutes & seconds were run
+      # expect(hours_minutes_and_seconds_to_run.length).to eq 24 * 60 * 60
+      # expected_hours_minutes_and_seconds = expected_hours_and_minutes.map { |hm| (0..59).map { |s| make_time(hm, s) } }.flatten
+      # expect(hours_minutes_and_seconds_to_run).to match_array expected_hours_minutes_and_seconds
     end
 
     # Should run 24x and have all hours of the day
@@ -118,7 +125,7 @@ RSpec.describe MarshGrass do
     # Should run (24 * 60 * 60) = 86400x and have all hours, minutes, and seconds of the day
     # This test is too slow to run by default, so it is commented out.
     xit 'allows testing against an iteration of hours, minutes, and seconds', time_of_day: %i[hours minutes seconds] do
-      expect(Time.now.strftime('%H:%M:%S')).not_to eq('10:25:44')
+      hours_minutes_and_seconds_to_run << Time.now.strftime('%H:%M:%S')
     end
   end
 
