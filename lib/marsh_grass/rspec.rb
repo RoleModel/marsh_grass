@@ -44,7 +44,7 @@ RSpec.configure do |config|
         seconds_to_run.each do |second|
           frozen_time = Time.new(now.year, now.month, now.day, hour, minute, second)
           test_description = "Run Time #{frozen_time.strftime('%H:%M:%S')}: #{shared_description}"
-          add_example_to_group(original_example, test_description, frozen_time: frozen_time.to_s)
+          add_example_to_group(original_example, test_description, frozen_time: frozen_time)
 
           # To avoid the original example being shown as "PENDING", mark it as executed
           original_example.instance_variable_set(:@executed, true)
@@ -69,8 +69,7 @@ RSpec.configure do |config|
       # for time to elapse.
       moving_time = Time.at(test_time_float + millisecond.to_f / 1000)
       test_description = "Run Time #{moving_time.strftime('%H:%M:%S:%L')}: #{shared_description}"
-      moving_time_string = moving_time.strftime('%Y-%m-%d %H:%M:%S.%L %z')
-      add_example_to_group(original_example, test_description, moving_time: moving_time_string)
+      add_example_to_group(original_example, test_description, moving_time: moving_time)
 
       # To avoid the original example being shown as "PENDING", mark it as executed
       original_example.instance_variable_set(:@executed, true)
@@ -85,7 +84,7 @@ RSpec.configure do |config|
 
     time_multipliers.each do |seconds_multiplier|
       test_description = "Run Speed #{seconds_multiplier}x Slower: #{shared_description}"
-      add_example_to_group(original_example, test_description, scaling_time: seconds_multiplier.to_s)
+      add_example_to_group(original_example, test_description, scaling_time: seconds_multiplier)
 
       # To avoid the original example being shown as "PENDING", mark it as executed
       original_example.instance_variable_set(:@executed, true)
@@ -122,7 +121,8 @@ RSpec.configure do |config|
   end
 
   config.before(:each, frozen_time: true) do |example|
-    time = Time.parse(example.metadata[:frozen_time])
+    time = example.metadata[:frozen_time]
+    time = Time.parse(example.metadata[:frozen_time]) if time.is_a?(String)
     # Freeze time at the specified hour, minute, and/or second.
     Timecop.freeze(time)
   end
@@ -132,7 +132,8 @@ RSpec.configure do |config|
   end
 
   config.before(:each, moving_time: true) do |example|
-    time = Time.parse(example.metadata[:moving_time])
+    time = example.metadata[:moving_time]
+    time = Time.parse(example.metadata[:moving_time]) if time.is_a?(String)
     # Travel to time at the specified hour, minute, and/or second.
     Timecop.travel(time)
   end
@@ -142,7 +143,7 @@ RSpec.configure do |config|
   end
 
   config.before(:each, scaling_time: true) do |example|
-    time_multiplier = example.metadata[:scaling_time].to_i
+    time_multiplier = example.metadata[:scaling_time]
     # Scale time by the specified multiplier.
     Timecop.scale(time_multiplier)
   end
