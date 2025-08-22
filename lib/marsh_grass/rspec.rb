@@ -7,7 +7,9 @@ require 'timecop'
 RSpec.configure do |config|
   def untag_example(example, tag)
     example.example_group.metadata.delete(tag) if example.metadata[:turnip]
-    example.metadata.delete(tag)
+    return_value = example.metadata[tag]
+    example.metadata[tag] = false # Set to false to avoid recursive nested repetitions
+    return_value
   end
 
   def add_example_to_group(original_example, test_description, metadata_overrides = {})

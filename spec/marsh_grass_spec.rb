@@ -191,18 +191,26 @@ RSpec.describe MarshGrass do
     end
   end
 
-  xcontext 'combining test scenarios' do
-    # Should run (10 * 24) = 240x and fail 66%
-    it 'runs repetitions of iterations on hours', repetitions: 10, time_of_day: :hours do
-      expect(rand(1..3)).to eq 1
+  context 'combining test scenarios' do
+    repetitions_hours = []
+    nested_repetitions_hours = []
+    after(:all) do
+      # assert that the repetitions were run
+      expect(repetitions_hours.length).to eq 72
+      expect(repetitions_hours.uniq.sort).to eq (0..23).to_a
+      expect(nested_repetitions_hours.length).to eq 48
+      expect(nested_repetitions_hours.uniq.sort).to eq (0..23).to_a
     end
 
-    # Should run (2 * 1000) = 2000x before chosen time and fail last ~ (3 * 50)x
-    # Should run 2x at chosen time and pass
-    # Should run (2 * 1000) = 2000x after chosen time and never fail
-    it 'runs slowly and time approaches midnight', surrounding_time: { hour: 0, minute: 0, second: 0 } do
-      now = Time.now
-      expect { sleep 0.05 }.not_to change { Time.now.day }.from(now.day)
+    # Should run (3 * 24) = 72x
+    it 'runs repetitions of iterations on hours', repetitions: 3, time_of_day: :hours do
+      repetitions_hours << Time.now.hour
+    end
+
+    context 'using repetitions on context', repetitions: 2 do
+      it 'runs on hours', time_of_day: :hours do
+        nested_repetitions_hours << Time.now.hour
+      end
     end
   end
 end
