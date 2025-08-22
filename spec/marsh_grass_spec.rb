@@ -145,6 +145,37 @@ RSpec.describe MarshGrass do
     end
   end
 
+  context 'running tests for variable elapsed time' do
+    elapsed_seconds_true = []
+    elapsed_seconds_range = []
+    after(:all) do
+      # assert that the repetitions were run
+      expect(elapsed_seconds_true.length).to eq 10
+      # should be 10 but depends on the milliseconds when started and test runtime
+      # using 5 as a reasonable minimum to avoid false positives
+      expect(elapsed_seconds_true.uniq.length).to be > 5
+      expect(elapsed_seconds_range.length).to eq 2
+      # could be 1 & 2 or 1 & 3, depending on the milliseconds when started and test runtime
+      expect(elapsed_seconds_range.uniq.length).to eq 2
+    end
+
+    # Should run 10x
+    it 'allows testing for time-dependent methods across default duration multipliers', :elapsed_time do
+      time_one = Time.now.to_i
+      sleep 1
+      time_two = Time.now.to_i
+      elapsed_seconds_true << time_two - time_one
+    end
+
+    # Should run 2x
+    it 'allows testing for specified duration multipliers', elapsed_time: (1..2) do
+      time_one = Time.now.to_i
+      sleep 1
+      time_two = Time.now.to_i
+      elapsed_seconds_range << time_two - time_one
+    end
+  end
+
   context 'running tests for variations in timezone' do
     timezone_hours = []
     after(:all) do

@@ -75,6 +75,21 @@ RSpec.configure do |config|
     end
   end
 
+  config.around(elapsed_time: true) do |original_example|
+    shared_description = original_example.metadata[:description]
+
+    time_multipliers = untag_example(original_example, :elapsed_time)
+    time_multipliers = (1..10) unless time_multipliers.respond_to?(:each)
+
+    time_multipliers.each do |seconds_multiplier|
+      test_description = "Run Speed #{seconds_multiplier}x Slower: #{shared_description}"
+      add_example_to_group(original_example, test_description, scaling_time: seconds_multiplier.to_s)
+
+      # To avoid the original example being shown as "PENDING", mark it as executed
+      original_example.instance_variable_set(:@executed, true)
+    end
+  end
+
   config.around(time_zones: true) do |original_example|
     shared_description = original_example.metadata[:description]
     untag_example(original_example, :time_zones)
@@ -120,7 +135,17 @@ RSpec.configure do |config|
     Timecop.travel(time)
   end
 
-  config.after(:each, time_zone: true) do
+  config.after(:each, moving_time: true) do
+    Timecop.return
+  end
+
+  config.before(:each, scaling_time: true) do |example|
+    time_multiplier = example.metadata[:scaling_time].to_i
+    # Scale time by the specified multiplier.
+    Timecop.scale(time_multiplier)
+  end
+
+  config.after(:each, scaling_time: true) do
     Timecop.return
   end
 
