@@ -33,7 +33,7 @@ RSpec.configure do |config|
 
     now = Time.now
     time_of_day = untag_example(original_example, :time_of_day)
-    test_segments = time_of_day.is_a?(Array) ? time_of_day : [time_of_day]
+    test_segments = Array(time_of_day)
     test_segments = [:hours] if test_segments == [true]
     hours_to_run = test_segments.include?(:hours) ? (0..23) : [now.hour]
     minutes_to_run = test_segments.include?(:minutes) ? (0..59) : [now.min]
