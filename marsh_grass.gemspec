@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'marsh_grass/version'
@@ -17,9 +16,9 @@ Gem::Specification.new do |spec|
     'amanda.pouget@rolemodelsoftware.com'
   ]
 
-  spec.summary       = %q{A set of tools to help diagnose random test failures.}
-  spec.description   = %q{Currently works with RSpec tags to run against possible test failure scenarios.}
-  spec.homepage      = ""
+  spec.summary       = 'A set of tools to help diagnose random test failures.'
+  spec.description   = 'Currently works with RSpec tags to run against possible test failure scenarios.'
+  spec.homepage      = ''
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
@@ -29,10 +28,12 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_development_dependency 'bundler', '~> 1.15'
+  spec.add_development_dependency 'bundler', '>= 2'
   spec.add_development_dependency 'pry-byebug', '~> 3'
   spec.add_development_dependency 'pry-doc', '~> 0'
-  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rake', '~> 13.0'
+  spec.add_dependency 'activesupport', '>= 7.1'
   spec.add_dependency 'rspec', '~> 3.6'
-  spec.add_dependency 'timecop', '~> 0'
+  spec.add_dependency 'rspec-rails', '~> 6'
+  spec.add_dependency 'timecop'
 end

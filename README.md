@@ -44,14 +44,14 @@ Or install it yourself as:
 Feature use:
 - N repetitions (default: 1000, or specify integer)
 - Times of day (default: all hours, minutes, seconds or specify :hours, :minutes, :seconds)
-- Time zones (executes against all hour and half-hour time zones)
+- Time zones (executes against each time zone offset from ActiveSupport::TimeZone)
 - Elapsed time during test execution (default: (1..10) execution slow-down multipliers or specify range)
 - Surrounding time, i.e., clock change over during the test (must specify hour: <integer>, minute: <integer>, second: <integer>)
 
 Surrounding time runs test at every millisecond from 1 sec before to 1 sec after specified time. This is particularly useful for discerning rate of failure near and at midnight.
 
 ### Examples
-Simple example:
+Simple examples:
 ```ruby
 it 'uses default repetitions', :repetitions do
  ...
@@ -60,8 +60,77 @@ end
 it 'uses specific repetitions', repetitions: 20 do
   ...
 end
+
+it 'uses just hours for default surrounding_time', :time_of_day do
+ ...
+end
+
+it 'uses each hour of day', time_of_day: :hours do
+  ...
+end
+
+it 'uses each hour and minute of the day', time_of_day: [:hours, :minutes] do
+ ...
+end
+
+it 'uses each second of current minute', time_of_day: :seconds do
+  ...
+end
+
+it 'uses current time for default surrounding_time', :surrounding_time do
+ ...
+end
+
+it 'uses each millisecond around hour of day', surrounding_time: { hour: 17 } do
+  ...
+end
+
+it 'uses each millisecond around specified time (noon)', surrounding_time: { hour: 12, minute: 0, second: 0 } do
+ ...
+end
+
+it 'uses 10 different speeds for default elapsed_time', :elapsed_time do
+  ...
+end
+
+it 'uses array of different speeds for elapsed_time', elapsed_time: [1, 5, 10] do
+  ...
+end
+
+it 'uses range of different speeds for elapsed_time', elapsed_time: (1..5) do
+  ...
+end
+
+it 'uses 34 different timezones for default time_zones', :time_zones do
+  ...
+end
+
+it 'uses single named timezone for time_zone (singular)', time_zone: 'Eastern Time (US & Canada)' do
+  ...
+end
+
+it 'uses a specific frozen time with a string', frozen_time: '2025-08-22 17:00:00' do
+  ...
+end
+
+it 'uses a specific frozen time with a Time', frozen_time: Time.new(2025, 8, 22, 17) do
+  ...
+end
+
+it 'uses a specific moving time with a string', moving_time: '2025-08-22 17:00:00' do
+  ...
+end
+
+it 'uses a specific moving time with a Time', moving_time: Time.new(2025, 8, 22, 17) do
+  ...
+end
+
+it 'uses a specific time scalar', scaling_time: 8 do
+  ...
+end
+
 ```
-[Full Examples](./spec/marsh_grass_spec.rb) of tests using each feature.
+[Further Examples](./spec/marsh_grass_spec.rb) of tests using each feature.
 
 ## Contributing
 
