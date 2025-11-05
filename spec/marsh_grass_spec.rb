@@ -124,7 +124,7 @@ RSpec.describe MarshGrass do
 
     # Should run (24 * 60 * 60) = 86400x and have all hours, minutes, and seconds of the day
     # This test is too slow to run by default, so it is commented out.
-    xit 'allows testing against an iteration of hours, minutes, and seconds', time_of_day: %i[hours minutes seconds] do
+    it 'allows testing against an iteration of hours, minutes, and seconds', time_of_day: %i[hours minutes seconds], skip: 'Too slow to run by default' do
       hours_minutes_and_seconds_to_run << Time.now.strftime('%H:%M:%S')
     end
   end
