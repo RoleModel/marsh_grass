@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry-byebug', '~> 3'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_dependency 'activesupport', '>= 7.1', '< 9.0'
-  spec.add_dependency 'rspec', '~> 3.6'
+  spec.add_dependency 'rspec', '>= 3.6', '< 5'
   spec.add_dependency 'rspec-rails', '>= 6', '< 9'
   spec.add_dependency 'timecop', '~> 0.9'
 end

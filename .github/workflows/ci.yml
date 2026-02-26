@@ -52,6 +52,12 @@ jobs:
             gemfile: activesupport-8.1
           - ruby: 3.1
             gemfile: activesupport-8.1
+        include:
+          # RSpec 4 (beta) - Ruby 4.0 only
+          - ruby: 4.0
+            gemfile: rspec-4-activesupport-8.0
+          - ruby: 4.0
+            gemfile: rspec-4-activesupport-8.1
 
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
