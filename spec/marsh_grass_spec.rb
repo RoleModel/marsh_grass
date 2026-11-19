@@ -180,12 +180,12 @@ RSpec.describe MarshGrass do
     timezone_hours = []
     after(:all) do
       # assert that the repetitions were run
-      expect(timezone_hours.length).to eq 34
-      offsets = %w[+00:00 +01:00 +02:00 +03:00 +03:30 +04:00 +04:30 +05:00 +05:30 +05:45 +06:00 +06:30 +07:00 +08:00 +09:00 +09:30 +10:00 +11:00 +12:00 +12:45 +13:00 -01:00 -02:00 -03:00 -03:30 -04:00 -05:00 -06:00 -07:00 -08:00 -09:00 -10:00 -11:00 -12:00]
+      offsets = ActiveSupport::TimeZone.all.map(&:formatted_offset).uniq.sort
+      expect(timezone_hours.length).to eq offsets.length
       expect(timezone_hours.uniq.sort).to eq offsets
     end
 
-    # Should run 34x
+    # Should run once per distinct offset
     it 'allows testing for all timezone variations', :time_zones do
       timezone_hours << Time.zone.formatted_offset
     end
